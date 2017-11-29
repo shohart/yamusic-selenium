@@ -1,3 +1,5 @@
+from selenium.common.exceptions import NoSuchElementException
+
 from .misc import Idable, Findable, find_or_new, \
                   LazyClass, lazyproperty, \
                   find_elements_in_scrollpane, seleniumdriven
@@ -55,6 +57,22 @@ class Album(Idable, Findable, LazyClass):
             song.album = self
             return song
         return [process(el) for el in driver.find_elements_by_class_name('track')]
+
+    @seleniumdriven()
+    def play(self, driver):
+        try:
+            driver.find_element_by_class_name('page-album__play').click()
+        except NoSuchElementException as e:
+            print(e)
+            return None
+
+    @seleniumdriven()
+    def pause(self, driver):
+        try:
+            driver.find_element_by_css_selector('.page-album__play.button-play_playing').click()
+        except NoSuchElementException:
+            return None
+
 
 from .artist import Artist
 from .song import Song

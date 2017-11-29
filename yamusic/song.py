@@ -1,3 +1,5 @@
+import time
+
 from .misc import Idable, Findable, find_or_new, \
                   LazyClass, lazyproperty, \
                   find_elements_in_scrollpane, seleniumdriven
@@ -57,6 +59,14 @@ class Song(Idable, Findable, LazyClass):
     @classmethod
     def find(clazz, album_id, _id):
         return find(album_id, _id)
+
+    @seleniumdriven()
+    def play(self, driver):
+        try:
+            driver.find_element_by_class_name('sidebar-track__play').click()
+        except NoSuchElementException:
+            return None
+
 
 from .artist import Artist
 from .album import Album
