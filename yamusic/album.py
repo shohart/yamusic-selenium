@@ -20,7 +20,21 @@ class Album(Idable, Findable, LazyClass):
     @lazyproperty
     @seleniumdriven()
     def title(self, driver):
-        return driver.find_element_by_class_name('page-album__title').text
+        title_el = driver.find_element_by_class_name('page-album__title')
+        try:
+            title_heading = title_el.find_element_by_tag_name('h1')
+        except NoSuchElementException as e:
+            title_heading = None
+        try:
+            title_subheading = title_el.find_element_by_tag_name('span')
+        except NoSuchElementException as e:
+            title_subheading = None
+        titles = []
+        if title_heading:
+            titles.append(title_heading.text)
+        if title_subheading:
+            titles.append(title_subheading.text)
+        return " ".join(titles)
 
     @lazyproperty
     @seleniumdriven()
@@ -52,11 +66,11 @@ class Album(Idable, Findable, LazyClass):
             def process_trackinfo(el):
                 song.duration = el.text
                 return song
-            song = process_trackname(el.find_element_by_class_name('track__name'))
-            song = process_trackinfo(el.find_element_by_class_name('track__info'))
+            song = process_trackname(el.find_element_by_class_name('d-track__name'))
+            song = process_trackinfo(el.find_element_by_class_name('typo-track'))
             song.album = self
             return song
-        return [process(el) for el in driver.find_elements_by_class_name('track')]
+        return [process(el) for el in driver.find_elements_by_class_name('d-track')]
 
     @seleniumdriven()
     def play(self, driver):
