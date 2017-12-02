@@ -67,6 +67,13 @@ class Song(Idable, Findable, LazyClass):
         except NoSuchElementException:
             return None
 
+    @seleniumdriven()
+    def pause(self, driver):
+        try:
+            driver.find_element_by_css_selector('.sidebar-track__play.button-play_playing').click()
+        except NoSuchElementException:
+            return None
+
 
 from .artist import Artist
 from .album import Album
