@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
+
 class SeleniumPool(queue.Queue):
     def __init__(self, maxsize=0, driver_producer=None):
         super().__init__(maxsize)

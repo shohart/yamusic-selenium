@@ -4,6 +4,7 @@ from time import sleep
 from string import Formatter
 from functools import reduce, wraps
 
+
 # Id objects
 # Link them
 # Find already fetched
@@ -18,27 +19,32 @@ class Idable:
         url = format_url(clazz.BASE, self)
         return url
 
+
 def find_or_new(clazz, _id):
-    _cid = ''.join((clazz.__name__, _id))
+    _cid = "".join((clazz.__name__, _id))
     if _cid not in refs:
         holdref = refs[_cid] = clazz(_id)
     return refs[_cid]
+
 
 class Findable:
     @classmethod
     def find(clazz, _id):
         return find_or_new(clazz, _id)
 
+
 # Links templating
 formater = Formatter()
 
+
 def format_url(tpl, obj):
     placeholders = [t[1] for t in formater.parse(tpl)]
-    baseargs = [a.split('.')[0] for a in placeholders if a is not None]
-    baseargs = [ (a, getattr(obj, a)) for a in baseargs]
+    baseargs = [a.split(".")[0] for a in placeholders if a is not None]
+    baseargs = [(a, getattr(obj, a)) for a in baseargs]
     baseargs = dict(baseargs)
     url = formater.format(tpl, **baseargs)
     return url
+
 
 # Lazy class and properties
 class LazyClass:
@@ -46,26 +52,33 @@ class LazyClass:
         pass
 
     def __setattr__(self, name, value):
-        private_name = name if name[0] == '_' else ''.join(('_',name))
+        private_name = name if name[0] == "_" else "".join(("_", name))
         super(LazyClass, self).__setattr__(private_name, value)
 
+
 def lazyproperty(fn):
-    attr_name = '_' + fn.__name__
+    attr_name = "_" + fn.__name__
+
     @property
     @wraps(fn)
     def _lazyproperty(self, *args, **kwargs):
         value = getattr(self, attr_name)
         noncheck = value is not None
-        structcheck = (type(value) is not list and type(value) is not dict) or len(value) > 0
+        structcheck = (type(value) is not list and type(value) is not dict) or len(
+            value
+        ) > 0
         if noncheck and structcheck:
             return value
         value = fn(self, *args, **kwargs)
         setattr(self, attr_name, value)
         return value
+
     return _lazyproperty
+
 
 # Elements lookup in scrollpanes
 SCROLL_SIZE = 20
+
 
 def find_elements_in_scrollpane(driver, finder, cb, sleepn=5):
     accumulator = list()
@@ -80,14 +93,19 @@ def find_elements_in_scrollpane(driver, finder, cb, sleepn=5):
         scroll_by(driver, SCROLL_SIZE)
     return accumulator
 
+
 def end_of_page(d):
-    return d.execute_script("return document.body.scrollHeight == window.scrollY + window.innerHeight")
+    return d.execute_script(
+        "return document.body.scrollHeight == window.scrollY + window.innerHeight"
+    )
+
 
 def scroll_by(d, n):
-    d.execute_script("window.scrollBy(0,%s)" % n);
+    d.execute_script("window.scrollBy(0,%s)" % n)
+
 
 # Selenium and navigation
-def seleniumdriven(url_tpl='', prefetch=True):
+def seleniumdriven(url_tpl="", prefetch=True):
     def seleniumdriven_decorator(fn):
         @wraps(fn)
         def _seleniumdriven(self, driver=None, prefetch_others=True):
@@ -95,8 +113,8 @@ def seleniumdriven(url_tpl='', prefetch=True):
             clazz = self.__class__
 
             def visit_url(driver, tpl=url_tpl):
-                if tpl[0:4] != 'http' and clazz.BASE is not None:
-                    tpl = ''.join((clazz.BASE, tpl))
+                if tpl[0:4] != "http" and clazz.BASE is not None:
+                    tpl = "".join((clazz.BASE, tpl))
                 url = format_url(tpl, self)
                 driver.get(url)
 
@@ -106,8 +124,10 @@ def seleniumdriven(url_tpl='', prefetch=True):
                         continue
                     met = getattr(clazz, met_name)
                     meto = met.fget if type(met) is property else met
-                    other_seleniumdriven = getattr(meto, '_seleniumdriven_prefetch', False)
-                    other_url_tpl = getattr(meto, '_seleniumdriven_url_tpl', None)
+                    other_seleniumdriven = getattr(
+                        meto, "_seleniumdriven_prefetch", False
+                    )
+                    other_url_tpl = getattr(meto, "_seleniumdriven_url_tpl", None)
                     if other_seleniumdriven and other_url_tpl == url_tpl:
                         meto(self, driver=driver, prefetch_others=False)
 
@@ -127,7 +147,8 @@ def seleniumdriven(url_tpl='', prefetch=True):
                 return process(driver)
 
         if prefetch:
-            setattr(_seleniumdriven, '_seleniumdriven_prefetch', True)
-        setattr(_seleniumdriven, '_seleniumdriven_url_tpl', url_tpl)
+            setattr(_seleniumdriven, "_seleniumdriven_prefetch", True)
+        setattr(_seleniumdriven, "_seleniumdriven_url_tpl", url_tpl)
         return _seleniumdriven
+
     return seleniumdriven_decorator
