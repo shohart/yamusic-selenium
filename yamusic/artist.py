@@ -92,5 +92,5 @@ class Artist(Idable, Findable, LazyClass):
         )
 
 
-# from .album import Album
-# from .song import Song
+from .album import Album
+from .song import Song

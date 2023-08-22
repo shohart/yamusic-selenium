@@ -109,5 +109,5 @@ class Album(Idable, Findable, LazyClass):
             return None
 
 
-# from .artist import Artist
-# from .song import Song
+from .artist import Artist
+from .song import Song
