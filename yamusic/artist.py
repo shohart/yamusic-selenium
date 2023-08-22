@@ -8,6 +8,8 @@ from .misc import (
     seleniumdriven,
 )
 
+from selenium.webdriver.common.by import By
+
 
 def find(_id):
     return find_or_new(Artist, _id)
@@ -25,16 +27,16 @@ class Artist(Idable, Findable, LazyClass):
     @lazyproperty
     @seleniumdriven()
     def title(self, driver):
-        return driver.find_element_by_class_name("page-artist__title").text
+        return driver.find_element(By.CLASS_NAME, "page-artist__title").text
 
     @lazyproperty
     @seleniumdriven("/albums")
     # TODO: Handle multiple artists
     def albums(self, driver):
         def process(el):
-            _id = el.find_element_by_tag_name("a").get_attribute("href").split("/")[-1]
-            title = el.find_element_by_class_name("album__title").text
-            year = el.find_element_by_class_name("album__year").text
+            _id = el.find_element(By.TAG_NAME, "a").get_attribute("href").split("/")[-1]
+            title = el.find_element(By.CLASS_NAME, "album__title").text
+            year = el.find_element(By.CLASS_NAME, "album__year").text
             year = year.split(" ")[0] if year is not None and len(year) > 0 else None
             album = Album.find(_id)
             album.title = title
@@ -43,7 +45,7 @@ class Artist(Idable, Findable, LazyClass):
             return album
 
         return find_elements_in_scrollpane(
-            driver, lambda: driver.find_elements_by_class_name("album"), process
+            driver, lambda: driver.find_elements(By.CLASS_NAME, "album"), process
         )
 
     @lazyproperty
@@ -52,7 +54,7 @@ class Artist(Idable, Findable, LazyClass):
         def process(el):
             def process_album(el):
                 _id = (
-                    el.find_element("tag_name", "a")
+                    el.find_element(By.TAG_NAME, "a")
                     .get_attribute("href")
                     .split("/")[-1]
                 )
@@ -64,7 +66,7 @@ class Artist(Idable, Findable, LazyClass):
 
             def process_trackname(el, album):
                 _id = (
-                    el.find_element("tag_name", "a")
+                    el.find_element(By.TAG_NAME, "a")
                     .get_attribute("href")
                     .split("/")[-1]
                 )
@@ -77,16 +79,16 @@ class Artist(Idable, Findable, LazyClass):
                 song.duration = el.text
                 return song
 
-            album = process_album(el.find_element("class_name", "d-track__meta"))
+            album = process_album(el.find_element(By.CLASS_NAME, "d-track__meta"))
             song = process_trackname(
-                el.find_element_by_class_name("d-track__name"), album
+                el.find_element(By.CLASS_NAME, "d-track__name"), album
             )
-            song = process_trackinfo(el.find_element("class_name", "typo-track"))
+            song = process_trackinfo(el.find_element(By.CLASS_NAME, "typo-track"))
             song.album = album
             return song
 
         return find_elements_in_scrollpane(
-            driver, lambda: driver.find_element("class_name", "d-track"), process
+            driver, lambda: driver.find_elements(By.CLASS_NAME, "d-track"), process
         )
 
 
