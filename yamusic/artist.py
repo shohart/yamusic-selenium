@@ -8,6 +8,9 @@ from .misc import (
     seleniumdriven,
 )
 
+from .album import Album
+from .song import Song
+
 
 def find(_id):
     return find_or_new(Artist, _id)
@@ -77,18 +80,14 @@ class Artist(Idable, Findable, LazyClass):
                 song.duration = el.text
                 return song
 
-            album = process_album(el.find_element_by_class_name("d-track__meta"))
+            album = process_album(el.find_element("class_name", "d-track__meta"))
             song = process_trackname(
                 el.find_element_by_class_name("d-track__name"), album
             )
-            song = process_trackinfo(el.find_element_by_class_name("typo-track"))
+            song = process_trackinfo(el.find_element("class_name", "typo-track"))
             song.album = album
             return song
 
         return find_elements_in_scrollpane(
-            driver, lambda: driver.find_elements_by_class_name("d-track"), process
+            driver, lambda: driver.find_element("class_name", "d-track"), process
         )
-
-
-from .album import Album
-from .song import Song
